@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 공무원 초과근무수당 계산기</title>
+    <!-- Google Fonts & CDN Libraries -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/@lucide/web"></script>
+    
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: rgba(30, 41, 59, 0.85);
+            --bg-input: #334155;
+            --border-color: rgba(255, 255, 255, 0.12);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-primary: #6366f1;
+            --accent-hover: #4f46e5;
+            --accent-glow: rgba(99, 102, 241, 0.35);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --shadow-glow: 0 0 25px rgba(99, 102, 241, 0.15);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f1f5f9;
+            --bg-secondary: #ffffff;
+            --bg-card: rgba(255, 255, 255, 0.95);
+            --bg-input: #e2e8f0;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --accent-primary: #4f46e5;
+            --accent-hover: #4338ca;
+            --accent-glow: rgba(79, 70, 229, 0.2);
+            --shadow-glow: 0 10px 30px rgba(79, 70, 229, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 1280px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--accent-primary), #a855f7);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.4rem;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .logo-title h1 {
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(90deg, var(--text-primary), var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-title p {
+            font-size: 0.825rem;
+            color: var(--text-secondary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .btn-icon:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        /* Main Layout Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 440px 1fr;
+            }
+        }
+
+        /* Card Section */
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.85rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        /* Form Controls */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .form-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .form-label .badge {
+            font-size: 0.725rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 20px;
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        select, input[type="text"], input[type="number"], input[type="date"], input[type="time"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        /* Toggle Button Group */
+        .toggle-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            background: var(--bg-input);
+            padding: 4px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .toggle-btn {
+            padding: 0.65rem 0.5rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .toggle-btn.active {
+            background: var(--accent-primary);
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Tab Navigation */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .tab-btn {
+            padding: 0.6rem 1rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .tab-btn.active {
+            background: var(--bg-input);
+            color: var(--accent-primary);
+        }
+
+        /* Result Overview Hero */
+        .hero-result {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+            border: 1px solid var(--accent-glow);
+            border-radius: var(--radius-lg);
+            padding: 1.75rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .hero-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .hero-amount {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin: 0.5rem 0;
+        }
+
+        .hero-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Stat Grid */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .stat-label {
+            font-size: 0.775rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-sub {
+            font-size: 0.725rem;
+            color: var(--accent-primary);
+        }
+
+        /* Overtime Limit Meter */
+        .meter-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .meter-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.825rem;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: var(--bg-input);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--success));
+            border-radius: 5px;
+            transition: width 0.4s ease;
+        }
+
+        .progress-fill.exceeded {
+            background: linear-gradient(90deg, var(--warning), var(--danger));
+        }
+
+        /* Log Table */
+        .table-wrapper {
+            overflow-x: auto;
+            max-height: 320px;
+            overflow-y: auto;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+            text-align: left;
+        }
+
+        th {
+            background: var(--bg-secondary);
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 0.75rem 1rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .btn-delete {
+            color: var(--danger);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        /* Action Button */
+        .btn-primary {
+            width: 100%;
+            padding: 0.85rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 14px var(--accent-glow);
+        }
+
+        .btn-primary:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+        }
+
+        /* Rules Info Box */
+        .info-box {
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            font-size: 0.825rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .info-box ul {
+            padding-left: 1.2rem;
+            margin-top: 0.4rem;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .receipt-header {
+            text-align: center;
+            border-bottom: 2px dashed var(--border-color);
+            padding-bottom: 1rem;
+        }
+
+        .receipt-header h2 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .receipt-row.total {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--accent-primary);
+            border-bottom: 2px solid var(--accent-primary);
+            border-top: 2px solid var(--accent-primary);
+            margin-top: 0.5rem;
+            padding: 0.75rem 0;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            .header-actions, .tabs, .btn-primary, .toggle-group, .btn-icon, .btn-delete {
+                display: none !important;
+            }
+            .card, .modal-content {
+                box-shadow: none !important;
+                border: 1px solid #ccc !important;
+            }
+        }
+    </style>
+</head>
+<body data-theme="dark">
+
+<div class="app-container">
+
+    <!-- Header -->
+    <header>
+        <div class="logo-group">
+            <div class="logo-icon">🧮</div>
+            <div class="logo-title">
+                <h1>공무원 초과근무수당 계산기</h1>
+                <p>2025 ~ 2026 공무원수당 등에 관한 규정 반영</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="btn-icon" id="themeToggle" title="테마 변경">☀️</button>
+            <button class="btn-icon" id="receiptBtn" title="급여 명세서 모달">📄</button>
+            <button class="btn-icon" onclick="window.print()" title="인쇄 / PDF 저장">🖨️</button>
+        </div>
+    </header>
+
+    <!-- Main Grid -->
+    <div class="main-grid">
+
+        <!-- Left Controls: Job & Setup Panel -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    ⚙️ 직급 및 근무 기준 설정
+                </div>
+            </div>
+
+            <!-- Job Category Selection -->
+            <div class="form-group">
+                <label class="form-label">
+                    직종 선택
+                    <span class="badge">2026 기준 단가</span>
+                </label>
+                <select id="jobCategory">
+                    <option value="general">일반직 공무원</option>
+                    <option value="police">경찰 / 소방 공무원</option>
+                    <option value="teacher">교원 (유·초·중·고)</option>
+                    <option value="custom">직접 단가 입력 (커스텀)</option>
+                </select>
+            </div>
+
+            <!-- Rank Selection -->
+            <div class="form-group" id="rankGroup">
+                <label class="form-label">직급 선택</label>
+                <select id="jobRank">
+                    <!-- Populated dynamically by JS -->
+                </select>
+            </div>
+
+            <!-- Hourly Rate Display / Input -->
+            <div class="form-group">
+                <label class="form-label">
+                    시간외근무수당 시간당 단가 (원)
+                    <span style="font-size:0.75rem; color:var(--text-muted);" id="rateNotice">수정 가능</span>
+                </label>
+                <input type="number" id="hourlyRate" value="12012" step="10">
+            </div>
+
+            <!-- Worker Duty Type -->
+            <div class="form-group">
+                <label class="form-label">근무 유형 구분</label>
+                <div class="toggle-group">
+                    <button type="button" class="toggle-btn active" id="btnNonField">
+                        비현업 공무원
+                    </button>
+                    <button type="button" class="toggle-btn" id="btnField">
+                        현업 공무원
+                    </button>
+                </div>
+            </div>
+
+            <!-- Regular Monthly Allowance Days -->
+            <div class="form-group" id="attendanceGroup">
+                <label class="form-label">
+                    월 출근 일수 (정량수당 산정용)
+                    <span style="font-size:0.75rem; color:var(--accent-primary);">15일 이상시 10시간 전액</span>
+                </label>
+                <input type="number" id="workDays" value="15" min="0" max="31">
+            </div>
+
+            <!-- Rules Summary info box -->
+            <div class="info-box" id="dutyTypeRules">
+                <strong>ℹ️ 비현업 공무원 적용 규정</strong>
+                <ul>
+                    <li>평일 시간외: 1시간 기본 공제 (식사시간 등)</li>
+                    <li>일일 최대 인정: 4시간 상한</li>
+                    <li>월 최대 실적수당 한도: 47시간 (정량 10시간 포함 총 57시간)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Right Content: Input Tabs & Dashboard -->
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <!-- Overview Hero Banner -->
+            <div class="hero-result">
+                <div class="hero-title">총 예상 초과근무 수당액</div>
+                <div class="hero-amount" id="totalAllowance">0 원</div>
+                <div class="hero-subtitle">
+                    <span id="heroHoursTag">총 0 시간 인정</span>
+                    <span>|</span>
+                    <span id="heroDutyTag">비현업 공무원 기준</span>
+                </div>
+            </div>
+
+            <!-- Tab Switching & Input Card -->
+            <div class="card">
+                <div class="tabs">
+                    <button class="tab-btn active" id="tabQuickBtn">
+                        ⚡ 월간 간편 입력
+                    </button>
+                    <button class="tab-btn" id="tabDailyBtn">
+                        📅 일별 상세 기록부
+                    </button>
+                </div>
+
+                <!-- Tab 1: Quick Calculator -->
+                <div id="quickTabContent" style="display: flex; flex-direction: column; gap: 1.25rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">평일 시간외 인정시간 (시간)</label>
+                            <input type="number" id="quickWeekdayHours" value="12" step="0.5" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">야간근무시간 (22시~06시)</label>
+                            <input type="number" id="quickNightHours" value="0" step="0.5" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">휴일근무시간 (시간)</label>
+                            <input type="number" id="quickHolidayHours" value="0" step="0.5" min="0">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Daily Log -->
+                <div id="dailyTabContent" style="display: none; flex-direction: column; gap: 1.25rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; background: var(--bg-secondary); padding: 1rem; border-radius: var(--radius-md); border:1px solid var(--border-color);">
+                        <div class="form-group">
+                            <label class="form-label">날짜</label>
+                            <input type="date" id="logDate">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">시작 시간</label>
+                            <input type="time" id="logStartTime" value="18:00">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">종료 시간</label>
+                            <input type="time" id="logEndTime" value="21:00">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">유형</label>
+                            <select id="logType">
+                                <option value="weekday">평일 시간외</option>
+                                <option value="holiday">휴일 근무</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn-primary" id="addLogBtn">
+                        ➕ 근무 기록 추가하기
+                    </button>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>날짜</th>
+                                    <th>구분</th>
+                                    <th>근무시간</th>
+                                    <th>실근무</th>
+                                    <th>공제</th>
+                                    <th>인정시간</th>
+                                    <th>야간</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="logTableBody">
+                                <!-- Log rows inserted dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Breakdown Stats Grid -->
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-label">시간외 실적수당</div>
+                    <div class="stat-value" id="valPerformance">0 원</div>
+                    <div class="stat-sub" id="subPerformance">0 시간 × 단가</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">정량수당 (기본)</div>
+                    <div class="stat-value" id="valFixed">0 원</div>
+                    <div class="stat-sub" id="subFixed">10 시간 인정</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">야간근무수당</div>
+                    <div class="stat-value" id="valNight">0 원</div>
+                    <div class="stat-sub" id="subNight">0 시간 인정</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">휴일근무수당</div>
+                    <div class="stat-value" id="valHoliday">0 원</div>
+                    <div class="stat-sub" id="subHoliday">0 시간 인정</div>
+                </div>
+            </div>
+
+            <!-- Overtime Monthly Limit Progress Bar -->
+            <div class="meter-container" id="meterSection">
+                <div class="meter-header">
+                    <span>월 초과근무 실적 한도 (최대 47시간)</span>
+                    <span id="meterText">0 / 47 시간 (0%)</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="meterFill"></div>
+                </div>
+            </div>
+
+            <!-- Chart visual -->
+            <div class="card" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; align-items: center;">
+                <div style="height: 220px; position: relative;">
+                    <canvas id="breakdownChart"></canvas>
+                </div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 0.6rem;">
+                    <div style="font-weight: 700; color: var(--text-primary); font-size: 0.95rem;">💡 산정 팁</div>
+                    <div>• <strong>시간외 수당 단가</strong> = (해당 직급 봉급액 기준) × 1/190 × 1.5</div>
+                    <div>• <strong>야간 수당 단가</strong> = (시간외 단가) × 1/3 (약 0.5배 산정기준 반영)</div>
+                    <div>• 평일 근무 시 18:00~19:00 사이 1시간은 식사시간 등으로 자동 공제됩니다.</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Receipt Modal -->
+<div class="modal-overlay" id="receiptModal">
+    <div class="modal-content">
+        <div class="receipt-header">
+            <h2>초과근무수당 산정 명세서</h2>
+            <p style="font-size: 0.825rem; color: var(--text-secondary); margin-top: 0.25rem;" id="receiptDateStr"></p>
+        </div>
+
+        <div id="receiptDetails">
+            <!-- Dynamic receipt rows -->
+        </div>
+
+        <div class="receipt-row total">
+            <span>최종 지급 예상액</span>
+            <span id="receiptTotalAmount">0 원</span>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+            <button class="btn-primary" onclick="window.print()">
+                🖨️ 명세서 인쇄
+            </button>
+            <button class="btn-primary" style="background: var(--bg-input); color: var(--text-primary);" id="closeReceiptBtn">
+                닫기
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- Preset Rates Data (2025 ~ 2026 대한민국 공무원 수당 단가표 기준) ---
+    const RATE_PRESETS = {
+        general: [
+            { label: "일반직 5급 (사무관)", rate: 15316 },
+            { label: "일반직 6급 (주무관)", rate: 13322 },
+            { label: "일반직 7급 (주무관)", rate: 12012 },
+            { label: "일반직 8급 (주무관)", rate: 10816 },
+            { label: "일반직 9급 (주무관)", rate: 10131 }
+        ],
+        police: [
+            { label: "경정 / 소방정 (5급상당)", rate: 15316 },
+            { label: "경감 / 소방령 (6급상당)", rate: 13322 },
+            { label: "경위 / 소방위 (6급상당)", rate: 12500 },
+            { label: "경사 / 소방장 (7급상당)", rate: 12012 },
+            { label: "경장 / 소방교 (8급상당)", rate: 10816 },
+            { label: "순경 / 소방사 (9급상당)", rate: 10131 }
+        ],
+        teacher: [
+            { label: "유·초·중·고 교원 (30호봉 이상)", rate: 14500 },
+            { label: "유·초·중·고 교원 (20~29호봉)", rate: 13200 },
+            { label: "유·초·중·고 교원 (10~19호봉)", rate: 11900 },
+            { label: "유·초·중·고 교원 (10호봉 미만)", rate: 10800 }
+        ]
+    };
+
+    // Global State Variables
+    let dutyType = 'non-field'; // 'non-field' | 'field'
+    let currentTab = 'quick'; // 'quick' | 'daily'
+    let dailyLogs = [];
+    let myChart = null;
+
+    // Core Calculation Logic
+    function calculateAll() {
+        try {
+            const hourlyRateEl = document.getElementById('hourlyRate');
+            const workDaysEl = document.getElementById('workDays');
+            const rate = parseFloat(hourlyRateEl.value) || 0;
+            const days = parseFloat(workDaysEl.value) || 0;
+
+            let weekdayHours = 0;
+            let nightHours = 0;
+            let holidayHours = 0;
+
+            if (currentTab === 'quick') {
+                weekdayHours = parseFloat(document.getElementById('quickWeekdayHours').value) || 0;
+                nightHours = parseFloat(document.getElementById('quickNightHours').value) || 0;
+                holidayHours = parseFloat(document.getElementById('quickHolidayHours').value) || 0;
+            } else {
+                dailyLogs.forEach(log => {
+                    if (log.type === 'weekday') {
+                        weekdayHours += log.recognizedHours;
+                    } else {
+                        holidayHours += log.recognizedHours;
+                    }
+                    nightHours += log.nightHours;
+                });
+            }
+
+            // 1. 시간외 실적수당 인정 시간 산정
+            let performanceHours = weekdayHours;
+            let cappedPerformanceHours = performanceHours;
+
+            if (dutyType === 'non-field') {
+                // 비현업 공무원 월 상한 47시간 제한
+                if (cappedPerformanceHours > 47) {
+                    cappedPerformanceHours = 47;
+                }
+            }
+
+            // 2. 정량수당 (기본 10시간, 출근일수 15일 미만시 일할계산)
+            let fixedHours = 0;
+            if (dutyType === 'non-field') {
+                if (days >= 15) {
+                    fixedHours = 10;
+                } else {
+                    fixedHours = (days / 15) * 10;
+                }
+            }
+
+            // 수당 금액 산출
+            const performancePay = Math.floor(cappedPerformanceHours * rate);
+            const fixedPay = Math.floor(fixedHours * rate);
+            
+            // 야간수당 단가 (약 1/3)
+            const nightRate = rate * (1 / 3);
+            const nightPay = Math.floor(nightHours * nightRate);
+
+            // 휴일수당
+            const holidayPay = Math.floor(holidayHours * rate);
+
+            const totalPay = performancePay + fixedPay + nightPay + holidayPay;
+            const totalRecognizedHours = cappedPerformanceHours + fixedHours + holidayHours;
+
+            // UI Updates
+            document.getElementById('totalAllowance').textContent = `${totalPay.toLocaleString()} 원`;
+            document.getElementById('heroHoursTag').textContent = `총 ${totalRecognizedHours.toFixed(1)} 시간 인정`;
+            document.getElementById('heroDutyTag').textContent = dutyType === 'non-field' ? '비현업 공무원 기준' : '현업 공무원 기준';
+
+            // Breakdown stats
+            document.getElementById('valPerformance').textContent = `${performancePay.toLocaleString()} 원`;
+            document.getElementById('subPerformance').textContent = `${cappedPerformanceHours.toFixed(1)} 시간 × 단가`;
+
+            document.getElementById('valFixed').textContent = `${fixedPay.toLocaleString()} 원`;
+            document.getElementById('subFixed').textContent = dutyType === 'non-field' ? `${fixedHours.toFixed(1)} 시간 (출근 ${days}일)` : '해당 없음';
+
+            document.getElementById('valNight').textContent = `${nightPay.toLocaleString()} 원`;
+            document.getElementById('subNight').textContent = `${nightHours.toFixed(1)} 시간 인정`;
+
+            document.getElementById('valHoliday').textContent = `${holidayPay.toLocaleString()} 원`;
+            document.getElementById('subHoliday').textContent = `${holidayHours.toFixed(1)} 시간 인정`;
+
+            // Update Overtime Meter
+            const meterFill = document.getElementById('meterFill');
+            const meterText = document.getElementById('meterText');
+            const pct = Math.min(100, (performanceHours / 47) * 100);
+            meterFill.style.width = `${pct}%`;
+            meterFill.classList.toggle('exceeded', performanceHours > 47);
+            meterText.textContent = `${performanceHours.toFixed(1)} / 47 시간 (${pct.toFixed(0)}%)`;
+
+            // Update Chart safely
+            updateChart(performancePay, fixedPay, nightPay, holidayPay);
+        } catch (err) {
+            console.error("Calculation Error:", err);
+        }
+    }
+
+    // Populate Rank Dropdown
+    function updateRankOptions() {
+        const jobCategoryEl = document.getElementById('jobCategory');
+        const jobRankEl = document.getElementById('jobRank');
+        const rankGroupEl = document.getElementById('rankGroup');
+        const hourlyRateEl = document.getElementById('hourlyRate');
+
+        const category = jobCategoryEl.value;
+        jobRankEl.innerHTML = '';
+
+        if (category === 'custom') {
+            rankGroupEl.style.display = 'none';
+            return;
+        }
+
+        rankGroupEl.style.display = 'flex';
+        const ranks = RATE_PRESETS[category] || [];
+        ranks.forEach((item, idx) => {
+            const opt = document.createElement('option');
+            opt.value = item.rate;
+            opt.textContent = `${item.label} (${item.rate.toLocaleString()}원/시간)`;
+            if (idx === 2) opt.selected = true; // default 7급
+            jobRankEl.appendChild(opt);
+        });
+
+        if (jobRankEl.value) {
+            hourlyRateEl.value = jobRankEl.value;
+        }
+    }
+
+    // Set Duty Type (Non-field vs Field)
+    function setDutyType(type) {
+        dutyType = type;
+        document.getElementById('btnNonField').classList.toggle('active', type === 'non-field');
+        document.getElementById('btnField').classList.toggle('active', type === 'field');
+
+        const meterSection = document.getElementById('meterSection');
+        const dutyTypeRulesEl = document.getElementById('dutyTypeRules');
+
+        if (type === 'non-field') {
+            meterSection.style.display = 'flex';
+            dutyTypeRulesEl.innerHTML = `
+                <strong>ℹ️ 비현업 공무원 적용 규정</strong>
+                <ul>
+                    <li>평일 시간외: 1시간 기본 공제 (식사시간 등)</li>
+                    <li>일일 최대 인정: 4시간 상한</li>
+                    <li>월 최대 실적수당 한도: 47시간 (정량 10시간 포함 총 57시간)</li>
+                </ul>
+            `;
+        } else {
+            meterSection.style.display = 'none';
+            dutyTypeRulesEl.innerHTML = `
+                <strong>ℹ️ 현업 공무원 적용 규정</strong>
+                <ul>
+                    <li>1시간 기본 공제 없음 (전액 인정)</li>
+                    <li>월간 및 일일 상한 시간 제한 없음</li>
+                    <li>야간근무수당(22:00~06:00) 및 휴일수당 추가 합산</li>
+                </ul>
+            `;
+        }
+        calculateAll();
+    }
+
+    // Tab Switching
+    function switchTab(tab) {
+        currentTab = tab;
+        document.getElementById('tabQuickBtn').classList.toggle('active', tab === 'quick');
+        document.getElementById('tabDailyBtn').classList.toggle('active', tab === 'daily');
+
+        document.getElementById('quickTabContent').style.display = tab === 'quick' ? 'flex' : 'none';
+        document.getElementById('dailyTabContent').style.display = tab === 'daily' ? 'flex' : 'none';
+
+        calculateAll();
+    }
+
+    // Add Daily Log Entry
+    function addDailyLog() {
+        const dateVal = document.getElementById('logDate').value;
+        const startTime = document.getElementById('logStartTime').value;
+        const endTime = document.getElementById('logEndTime').value;
+        const logType = document.getElementById('logType').value;
+
+        if (!dateVal || !startTime || !endTime) {
+            alert('날짜 및 시간 정보를 모두 입력해주세요.');
+            return;
+        }
+
+        const startMin = timeToMinutes(startTime);
+        let endMin = timeToMinutes(endTime);
+        if (endMin <= startMin) endMin += 24 * 60; // Next day end
+
+        const grossMinutes = endMin - startMin;
+        const grossHours = grossMinutes / 60;
+
+        let deduction = 0;
+        let recognizedHours = grossHours;
+
+        if (dutyType === 'non-field' && logType === 'weekday') {
+            deduction = 1.0; // 1시간 공제
+            recognizedHours = Math.max(0, grossHours - deduction);
+            if (recognizedHours > 4.0) {
+                recognizedHours = 4.0; // 일일 4시간 상한
+            }
+        }
+
+        // Calculate Night Hours (22:00 ~ 06:00)
+        const nightMinutes = calculateNightMinutes(startMin, endMin);
+        const nightHours = nightMinutes / 60;
+
+        const entry = {
+            id: Date.now(),
+            date: dateVal,
+            type: logType,
+            startTime,
+            endTime,
+            grossHours: grossHours.toFixed(1),
+            deduction: deduction.toFixed(1),
+            recognizedHours: parseFloat(recognizedHours.toFixed(1)),
+            nightHours: parseFloat(nightHours.toFixed(1))
+        };
+
+        dailyLogs.push(entry);
+        renderLogTable();
+        calculateAll();
+    }
+
+    function removeLog(id) {
+        dailyLogs = dailyLogs.filter(item => item.id !== id);
+        renderLogTable();
+        calculateAll();
+    }
+
+    function renderLogTable() {
+        const tbody = document.getElementById('logTableBody');
+        tbody.innerHTML = '';
+
+        dailyLogs.forEach(log => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${log.date}</td>
+                <td>${log.type === 'weekday' ? '평일' : '휴일'}</td>
+                <td>${log.startTime} ~ ${log.endTime}</td>
+                <td>${log.grossHours}h</td>
+                <td style="color:var(--warning);">${log.deduction}h</td>
+                <td style="font-weight:700; color:var(--accent-primary);">${log.recognizedHours}h</td>
+                <td>${log.nightHours > 0 ? log.nightHours + 'h' : '-'}</td>
+                <td>
+                    <button class="btn-delete" onclick="removeLog(${log.id})">삭제</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function timeToMinutes(timeStr) {
+        const [h, m] = timeStr.split(':').map(Number);
+        return h * 60 + m;
+    }
+
+    function calculateNightMinutes(startMin, endMin) {
+        let nightMins = 0;
+        for (let m = startMin; m < endMin; m++) {
+            const modM = m % (24 * 60);
+            if (modM >= 1320 || modM < 360) {
+                nightMins++;
+            }
+        }
+        return nightMins;
+    }
+
+    // Chart.js Setup with safe fallback
+    function initChart() {
+        if (typeof Chart === 'undefined') return;
+        try {
+            const ctx = document.getElementById('breakdownChart').getContext('2d');
+            if (myChart) myChart.destroy();
+
+            const isDark = document.body.getAttribute('data-theme') === 'dark';
+            const textColor = isDark ? '#f8fafc' : '#0f172a';
+
+            myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['실적 수당', '정량 수당', '야간 수당', '휴일 수당'],
+                    datasets: [{
+                        data: [0, 0, 0, 0],
+                        backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#3b82f6'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: textColor, font: { family: 'Pretendard', size: 11 } }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        } catch (e) {
+            console.warn("Chart init deferred or failed:", e);
+        }
+    }
+
+    function updateChart(perf, fixed, night, hol) {
+        if (!myChart) return;
+        myChart.data.datasets[0].data = [perf, fixed, night, hol];
+        myChart.update();
+    }
+
+    // Receipt Modal Logic
+    function openReceiptModal() {
+        const modal = document.getElementById('receiptModal');
+        const dateStr = new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('receiptDateStr').textContent = `작성일시: ${dateStr}`;
+
+        const rate = parseFloat(document.getElementById('hourlyRate').value) || 0;
+        const totalAmountText = document.getElementById('totalAllowance').textContent;
+
+        const perfText = document.getElementById('valPerformance').textContent;
+        const fixedText = document.getElementById('valFixed').textContent;
+        const nightText = document.getElementById('valNight').textContent;
+        const holidayText = document.getElementById('valHoliday').textContent;
+
+        const detailsEl = document.getElementById('receiptDetails');
+        detailsEl.innerHTML = `
+            <div class="receipt-row">
+                <span>시간당 기본 단가</span>
+                <strong>${rate.toLocaleString()} 원</strong>
+            </div>
+            <div class="receipt-row">
+                <span>근무 형태 구분</span>
+                <strong>${dutyType === 'non-field' ? '비현업 공무원' : '현업 공무원'}</strong>
+            </div>
+            <div class="receipt-row">
+                <span>시간외 실적수당</span>
+                <span>${perfText}</span>
+            </div>
+            <div class="receipt-row">
+                <span>정량수당 (기본)</span>
+                <span>${fixedText}</span>
+            </div>
+            <div class="receipt-row">
+                <span>야간근무수당</span>
+                <span>${nightText}</span>
+            </div>
+            <div class="receipt-row">
+                <span>휴일근무수당</span>
+                <span>${holidayText}</span>
+            </div>
+        `;
+        document.getElementById('receiptTotalAmount').textContent = totalAmountText;
+        modal.classList.add('active');
+    }
+
+    function closeReceiptModal() {
+        document.getElementById('receiptModal').classList.remove('active');
+    }
+
+    // Bind Event Listeners
+    function initEvents() {
+        document.getElementById('btnNonField').addEventListener('click', () => setDutyType('non-field'));
+        document.getElementById('btnField').addEventListener('click', () => setDutyType('field'));
+
+        document.getElementById('tabQuickBtn').addEventListener('click', () => switchTab('quick'));
+        document.getElementById('tabDailyBtn').addEventListener('click', () => switchTab('daily'));
+
+        document.getElementById('jobCategory').addEventListener('change', () => {
+            updateRankOptions();
+            calculateAll();
+        });
+
+        document.getElementById('jobRank').addEventListener('change', () => {
+            document.getElementById('hourlyRate').value = document.getElementById('jobRank').value;
+            calculateAll();
+        });
+
+        document.getElementById('hourlyRate').addEventListener('input', calculateAll);
+        document.getElementById('workDays').addEventListener('input', calculateAll);
+
+        document.getElementById('quickWeekdayHours').addEventListener('input', calculateAll);
+        document.getElementById('quickNightHours').addEventListener('input', calculateAll);
+        document.getElementById('quickHolidayHours').addEventListener('input', calculateAll);
+
+        document.getElementById('addLogBtn').addEventListener('click', addDailyLog);
+        document.getElementById('receiptBtn').addEventListener('click', openReceiptModal);
+        document.getElementById('closeReceiptBtn').addEventListener('click', closeReceiptModal);
+
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            const body = document.body;
+            const isDark = body.getAttribute('data-theme') === 'dark';
+            body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            document.getElementById('themeToggle').textContent = isDark ? '🌙' : '☀️';
+            initChart();
+            calculateAll();
+        });
+
+        // Set Date
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('logDate').value = today;
+    }
+
+    // Bootstrap App
+    window.addEventListener('DOMContentLoaded', () => {
+        updateRankOptions();
+        initEvents();
+        initChart();
+        calculateAll();
+    });
+
+    // Fallback immediate execution if DOMContentLoaded fired already
+    if (document.readyState === 'interactive' || document.readyState === 'complete') {
+        updateRankOptions();
+        initEvents();
+        initChart();
+        calculateAll();
+    }
+</script>
+
+</body>
+</html>
