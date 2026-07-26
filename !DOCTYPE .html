@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>공무원 초과근무수당 계산기</title>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>공무원 초과근무수당 계산기</h1>
+
+<div class="card">
+
+<label>시간외근무수당 단가(원)</label>
+<input type="number" id="rate" value="12000">
+
+<label>실제 초과근무 시간(시간)</label>
+<input type="number" id="workHour" value="20">
+
+<label>
+<input type="checkbox" id="basicHour" checked>
+기본 정액분 10시간 포함
+</label>
+
+<button onclick="calculate()">계산하기</button>
+
+<hr>
+
+<div class="result">
+
+<p>지급대상 시간 :
+<span id="payHour">0</span> 시간
+</p>
+
+<p>총 지급액 :
+<span id="money">0</span> 원
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
